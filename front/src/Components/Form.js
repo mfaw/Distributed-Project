@@ -109,11 +109,11 @@ function Form(props){
 
         <form className="form">
         <FontAwesomeIcon icon={faUser} className="user-icon"/>
-        {errorMessage && <p className="errorMessage">{errorMessage}</p>}
+        {errorMessage && <p className="errorMessage-form">{errorMessage}</p>}
         {signIn ? 
             (
                 <>
-                    /* 2 inputs for sign in, usernme and password */
+                    {/* /* 2 inputs for sign in, usernme and password */ }
                     <input
                         name="UserName"
                         className="form-username form-textbox"
@@ -136,7 +136,7 @@ function Form(props){
                         autocomplete="off"
                         type='password'
                     />
-                    /**The login button onclick event triggers the handleClick function */
+                     {/* The login button onclick event triggers the handleClick function  */}
                     <button
                         onClick={handleClick}
                         className = "login-button"
@@ -147,7 +147,7 @@ function Form(props){
         :
             (
                 <>
-                    /**Sign up is same as login but, 3 inputs (username, password, and email) */
+                    {/* Sign up is same as login but, 3 inputs (username, password, and email)  */}
                     <input
                         name="UserName"
                         className="form-username form-textbox"
@@ -193,8 +193,8 @@ function Form(props){
         // and the forms won't appear
         <div className="form-container">
             <GridLoader color='rgb(6, 6, 98);' loading={loading} size={15} />
-            /**If loading is false, data fetched from server done, 
-            the form will be viewed and the input toggle switch to go from sign up to sign in and vice versa */
+            {/* /**If loading is false, data fetched from server done, 
+            the form will be viewed and the input toggle switch to go from sign up to sign in and vice versa */ }
             {!loading && fortmView }
             {!loading && 
             <div className="checkbox--container">

@@ -10,9 +10,6 @@ import Cursor from './Cursor';
 
 import {
     BrowserRouter as Router,
-    Switch,
-    Route,
-    Link,
     useNavigate,
 } from "react-router-dom";
 
@@ -87,8 +84,8 @@ export default function DocList(props){
     const documentElements = documentList.map((element , index) =>{
         return(
             <>
-            /**onclick triggers the handleDocumentClick event which navigates the document folder with the id of the element
-            to return a list of documents*/
+            {/* /**onclick triggers the handleDocumentClick event which navigates the document folder with the id of the element
+            to return a list of documents*/ }
             <div className='document-contianer' onClick={handleDocumentClick} id = {element.name} key = {'doc'+index}>
                 <p className='document'>{element.name}</p>
             </div>
@@ -101,13 +98,13 @@ export default function DocList(props){
         // returns a list of documents and input box with create button
         <div className='document-list-container'>
             {errorMessage && <p className='errorMessage'>{errorMessage}</p>}
-            /** list of documents returned */
+            {/* /** list of documents returned */ }
             <div className='document-list'>
                 {documentElements}
 
             </div>
             <div className='add-new-document'>
-                /**input box to type in document name and click create */
+                {/* /**input box to type in document name and click create */ }
                 <input
                 name="documentName"
                 className="form-textbox-document"
@@ -118,7 +115,7 @@ export default function DocList(props){
                 autocomplete="off"
                 type='text'
                 />
-                /**create button that initiates an event when clicked and triggers the handleclick function */
+                {/* /**create button that initiates an event when clicked and triggers the handleclick function */ }
                 <button
                         onClick={handleClick}
                         className = "add-document-button"

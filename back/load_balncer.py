@@ -16,7 +16,7 @@ import sys
 import time
 import os
 import random
-import datetime
+import datetime 
 from flask import session
 from flask_socketio import SocketIO , send, emit , disconnect , join_room, leave_room
 from flask_login import LoginManager , login_user , login_required, current_user , logout_user
@@ -39,10 +39,10 @@ app.config['SECRET_KEY'] = SECRETKEY
 socketio = SocketIO(app , logger = False , cors_allowed_origins="*" , async_handlers=False)
 # db_drop_and_create_all()
 
-# c
-workers = {}
-documentSupporters = {}
-sessionRoom = {}
+workers = {} # cache all avalibasle worker (worker ker -> value port of the worker)
+documentSupporters = {} # cache worker port that supports the already opened document plus number of useres in the room
+sessionRoom = {} # Cache ther users the key is sessio id value is the port number handled by the worker 
+
 @login_manager.user_loader
 def load_user(user_id):
     return Person.query.get(int(user_id))
@@ -73,23 +73,22 @@ sessionRoom )
 
 @app.route("/signup" , methods=['POST'])
 def sign_up():
-    payload = request.get_json()['Data']
-    returned_jwt = CreateUserJWT()
-    instance = Person.query.filter_by(username = payload['UserName']).first()
-    instance2 = Person.query.filter_by(username = payload['Email']).first()
-    if(instance !=None or instance2 !=None):
-        time.sleep(0.5)
-        return {'result' : False}
-    else:
-        try:
-            person_user = Person(username=payload['UserName'], password = returned_jwt , email = payload["Email"])
-            person_user.insert()
-            login_user(person_user, remember=True)
-            time.sleep(0.5)
+    try:
+        port = random.choice(list(workers.values()))
+        url = f'http://127.0.0.1:{port}/signup'
+        response = requests.post(url, json = request.get_json())
+        if(response.json()['result'] == False):
+            return response.json()
+        else:
+            user =  Person.query.filter_by(id = response.json()['user']['id']).first()
+            login_user(user, remember=True)
             return {'result' : True}
-        except:
-            print(sys.exc_info())
-            abort(400)
+
+    except: 
+        print(sys.exc_info())
+        abort(400) 
+   
+
 
 
 
@@ -100,6 +99,7 @@ def authorized():
         return {"result" : True}
     else: 
         return {"result" : False}
+
 
 
 @app.route("/addDocumnet" , methods=['POST'])
@@ -169,11 +169,9 @@ def test_disconnect():
         emit('member_leaving' , {"sid" : request.sid} , room = room)
 
 
-
-@socketio.on('connectToRoom')
-@authenticated_only
-def connectToNewRoom(objectData):
-
+def registerSupporter(objectData):
+    global documentSupporters
+    global sessionRoom
     if(objectData['room'] in documentSupporters):
         port = documentSupporters[objectData['room']][0]
         if(request.sid in sessionRoom):
@@ -183,7 +181,15 @@ def connectToNewRoom(objectData):
     else:
         port = random.choice(list(workers.values()))
         documentSupporters[objectData['room']] = [port , 1]
+
     sessionRoom[request.sid] = port
+    return port
+
+@socketio.on('connectToRoom')
+@authenticated_only
+def connectToNewRoom(objectData):
+
+    port = registerSupporter(objectData)
     print(f"number of users ----------------> {documentSupporters[objectData['room']][1]}")
     print(documentSupporters)
     url = f'http://127.0.0.1:{port}/connectToRoom'
@@ -195,7 +201,10 @@ def connectToNewRoom(objectData):
 @socketio.on('registerMouse')
 @authenticated_only
 def registerMouse(objectData):
-    port = documentSupporters[objectData['room']][0]
+    if objectData['room'] in documentSupporters: 
+        port = documentSupporters[objectData['room']][0]
+    else:
+        port = registerSupporter(objectData)
     url = f'http://127.0.0.1:{port}/registerMouse'
     response = requests.post(url, json = {'id' : current_user.id})
     user = response.json()['name']
@@ -242,8 +251,8 @@ def send_changes(objectData):
 @socketio.on('save-document')
 @authenticated_only
 def save_document(objectData):
-    entery = random.choice(list(workers.values()))
-    url = f'http://127.0.0.1:{entery}/save_document'
+    port = random.choice(list(workers.values()))
+    url = f'http://127.0.0.1:{port}/save_document'
     requests.post(url, json = objectData)
 
 
@@ -351,18 +360,26 @@ def auth_error(error):
         "message":error.error
     }),error.status_code    
 
-# processing happens in app.py 
-# load balancer validates user is authenticated and gives port of worker for endpoint
-# user communicates with load balancer and enters room, the port given to endpoint for worker to process is decided
-# get room of document and check which port it's working on
 
 def checkWorkers():
     global workers
+    global documentSupporters
+    global sessionRoom
     for key in workers:
         url = f'http://127.0.0.1:{workers[key]}/condition'
         try:
             response = requests.get(url)
         except:
+
+            for key2 in documentSupporters:
+                if documentSupporters[key2][0] == workers[key]:
+                    del documentSupporters[key2]
+                    break
+            for key2 in sessionRoom:
+                if sessionRoom[key2] == workers[key]:
+                    del sessionRoom[key2]
+                    break
+            
             del workers[key]
             continue
         if(response.json()['result'] != True):

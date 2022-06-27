@@ -23,7 +23,7 @@
     border: none;
 }
 .login-button{
-    width: 4rem;
+    width: 6rem;
     margin-top: 2rem;
     border: 1px solid rgb(6, 6, 98);
     border-radius: 2rem;
@@ -43,8 +43,8 @@
 }
 .form-container{
     margin: 5rem auto;
-    width: 15rem;
-    height: 24rem;
+    max-width: 15rem;
+    min-height: 24rem;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -123,4 +123,18 @@
     border-radius: 100%;
     color:rgb(6, 6, 98); 
     margin-bottom: 1rem;
+}
+.errorMessage-form{
+    border: 1px solid red;
+    /* padding: 1rem 2rem; */
+    width: 100%;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    border-radius: 1rem;
+    padding: 0.3rem 0.2rem;
+    color: rgb(240, 236, 236);
+    background-color: red;
 }

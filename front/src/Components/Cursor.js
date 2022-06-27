@@ -75,8 +75,8 @@ function Cursor(props) {
                 // want to tell server which document it is
                 // if document saved we will send document baack
                 // set the document data and current user
-                setDocumentData(data['data'])
-                setCurrentUser(data['sid'])
+                if(documentData == null) setDocumentData(data['data'])
+                if(currentUser == null) setCurrentUser(data['sid'])
                 console.log(data['data'])
                 socket.off('reciveDocument')
             })
@@ -349,7 +349,7 @@ function Cursor(props) {
              <div className="container" ref={wrapperRef}></div>
             {cursers}
             <div className='logoutbutton-container'>
-                /**When log out button is clicked it initiates and event to trigger leaveRoom function*/
+                {/* /**When log out button is clicked it initiates and event to trigger leaveRoom function*/ }
                 <button
                     onClick={ () => props.leaveRoom(id)}
                     className='logoutbutton'
